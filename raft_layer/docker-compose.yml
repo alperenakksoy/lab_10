@@ -1,0 +1,69 @@
+# docker-compose.yml — 3-node Raft cluster + monitoring dashboard
+#
+# Usage:
+#   docker compose up --build          # start all services
+#   docker compose logs -f node1       # tail node1 logs
+#   docker network disconnect raft_raft-net raft-node1  # simulate partition
+#   docker compose stop node1          # kill leader for failover test
+#   docker compose start node1         # restore old leader
+
+services:
+
+  node1:
+    build: .
+    container_name: raft-node1
+    environment:
+      NODE_ID: "node1"
+      PEERS:   "http://node2:5000,http://node3:5000"
+      PORT:    "5000"
+    ports:
+      - "5001:5000"
+    networks:
+      - raft-net
+    restart: "no"    # don't auto-restart — lets us test failover cleanly
+
+  node2:
+    build: .
+    container_name: raft-node2
+    environment:
+      NODE_ID: "node2"
+      PEERS:   "http://node1:5000,http://node3:5000"
+      PORT:    "5000"
+    ports:
+      - "5002:5000"
+    networks:
+      - raft-net
+    restart: "no"
+
+  node3:
+    build: .
+    container_name: raft-node3
+    environment:
+      NODE_ID: "node3"
+      PEERS:   "http://node1:5000,http://node2:5000"
+      PORT:    "5000"
+    ports:
+      - "5003:5000"
+    networks:
+      - raft-net
+    restart: "no"
+
+  dashboard:
+    build: .
+    container_name: raft-dashboard
+    environment:
+      RAFT_PEERS:      "http://node1:5000,http://node2:5000,http://node3:5000"
+      DASHBOARD_PORT:  "8080"
+    command: python dashboard.py
+    ports:
+      - "8080:8080"
+    depends_on:
+      - node1
+      - node2
+      - node3
+    networks:
+      - raft-net
+
+networks:
+  raft-net:
+    driver: bridge

@@ -1,0 +1,15 @@
+# config.yaml — Consistency mode for the replicated KV store
+#
+# mode: 'cp'  → Strong Consistency (CP)
+#               Writes succeed only when ALL replicas acknowledge.
+#               During a partition, writes to isolated nodes fail (503).
+#
+# mode: 'ap'  → Eventual Consistency (AP)
+#               Writes succeed after local acknowledgement only.
+#               Replicas diverge during a partition and re-converge via
+#               vector clocks when the partition heals.
+#
+# Switch mode by editing this file and restarting the services, OR by
+# setting the CONFIG_MODE environment variable (env var takes precedence).
+
+mode: 'ap'

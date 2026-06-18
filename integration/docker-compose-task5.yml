@@ -1,0 +1,172 @@
+# docker-compose-task5.yml
+# Full 8-node offline-capable deployment
+# 3 Raft consensus nodes + 5 client replicas
+#
+# Usage:
+#   docker compose -f docker-compose-task5.yml up --build
+#
+# Simulate partition on client-3 and client-4:
+#   docker network disconnect raft_raft-net raft-client3
+#   docker network disconnect raft_raft-net raft-client4
+#
+# Reconnect:
+#   docker network connect raft_raft-net raft-client3
+#   docker network connect raft_raft-net raft-client4
+#
+# Or use the HTTP offline flag (no Docker needed):
+#   curl -X POST http://localhost:6003/go_offline
+#   curl -X POST http://localhost:6003/go_online
+
+services:
+
+  # ── Raft Consensus Nodes ──────────────────────────
+  node1:
+    build: .
+    container_name: raft-node1
+    command: python app.py
+    environment:
+      NODE_ID: "node1"
+      PEERS:   "http://node2:5000,http://node3:5000"
+      PORT:    "5000"
+    ports:
+      - "5001:5000"
+    networks:
+      - raft-net
+    restart: "no"
+
+  node2:
+    build: .
+    container_name: raft-node2
+    command: python app.py
+    environment:
+      NODE_ID: "node2"
+      PEERS:   "http://node1:5000,http://node3:5000"
+      PORT:    "5000"
+    ports:
+      - "5002:5000"
+    networks:
+      - raft-net
+    restart: "no"
+
+  node3:
+    build: .
+    container_name: raft-node3
+    command: python app.py
+    environment:
+      NODE_ID: "node3"
+      PEERS:   "http://node1:5000,http://node2:5000"
+      PORT:    "5000"
+    ports:
+      - "5003:5000"
+    networks:
+      - raft-net
+    restart: "no"
+
+  # ── Client Replicas (offline-capable) ────────────
+  client1:
+    build: .
+    container_name: raft-client1
+    command: python offline_app.py
+    environment:
+      REPLICA_ID:  "client-1"
+      RAFT_PEERS:  "http://node1:5000,http://node2:5000,http://node3:5000"
+      PORT:        "6000"
+      OFFLINE:     "0"
+      SYNC_INTERVAL_S: "5"
+    ports:
+      - "6001:6000"
+    depends_on:
+      - node1
+      - node2
+      - node3
+    networks:
+      - raft-net
+
+  client2:
+    build: .
+    container_name: raft-client2
+    command: python offline_app.py
+    environment:
+      REPLICA_ID:  "client-2"
+      RAFT_PEERS:  "http://node1:5000,http://node2:5000,http://node3:5000"
+      PORT:        "6000"
+      OFFLINE:     "0"
+      SYNC_INTERVAL_S: "5"
+    ports:
+      - "6002:6000"
+    depends_on:
+      - node1
+    networks:
+      - raft-net
+
+  client3:
+    build: .
+    container_name: raft-client3
+    command: python offline_app.py
+    environment:
+      REPLICA_ID:  "client-3"
+      RAFT_PEERS:  "http://node1:5000,http://node2:5000,http://node3:5000"
+      PORT:        "6000"
+      OFFLINE:     "0"
+      SYNC_INTERVAL_S: "5"
+    ports:
+      - "6003:6000"
+    depends_on:
+      - node1
+    networks:
+      - raft-net
+
+  client4:
+    build: .
+    container_name: raft-client4
+    command: python offline_app.py
+    environment:
+      REPLICA_ID:  "client-4"
+      RAFT_PEERS:  "http://node1:5000,http://node2:5000,http://node3:5000"
+      PORT:        "6000"
+      OFFLINE:     "0"
+      SYNC_INTERVAL_S: "5"
+    ports:
+      - "6004:6000"
+    depends_on:
+      - node1
+    networks:
+      - raft-net
+
+  client5:
+    build: .
+    container_name: raft-client5
+    command: python offline_app.py
+    environment:
+      REPLICA_ID:  "client-5"
+      RAFT_PEERS:  "http://node1:5000,http://node2:5000,http://node3:5000"
+      PORT:        "6000"
+      OFFLINE:     "0"
+      SYNC_INTERVAL_S: "5"
+    ports:
+      - "6005:6000"
+    depends_on:
+      - node1
+    networks:
+      - raft-net
+
+  # ── Monitoring Dashboard ──────────────────────────
+  dashboard:
+    build: .
+    container_name: raft-dashboard
+    command: python dashboard.py
+    environment:
+      RAFT_PEERS:     "http://node1:5000,http://node2:5000,http://node3:5000"
+      DASHBOARD_PORT: "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - node1
+      - node2
+      - node3
+    networks:
+      - raft-net
+
+networks:
+  raft-net:
+    driver: bridge
