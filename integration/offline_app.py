@@ -37,9 +37,9 @@ import time
 import requests
 from flask import Flask, request, jsonify, render_template_string
 
-# Local CRDT imports (from Week 8 task files)
-from crdt_or_set    import ORSet
-from crdt_pn_counter import PNCounter
+# Local CRDT imports
+from crdt_layer.crdt_or_set import ORSet
+from crdt_layer.crdt_pn_counter import PNCounter
 
 # ---------------------------------------------------------------------------
 # Config
