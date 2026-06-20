@@ -54,14 +54,11 @@ class ORSet:
         return bool(add_tags - remove_tags)
 
     def value(self) -> set:
-        """Return the set of all currently present elements."""
         result = set()
-        for element, add_tags in self.adds.items():
-            remove_tags = self.removes.get(element, set())
-            if add_tags - remove_tags:
+        for element in self.adds:
+            if self.contains(element): 
                 result.add(element)
         return result
-
     # ------------------------------------------------------------------
     # Merge
     # ------------------------------------------------------------------
