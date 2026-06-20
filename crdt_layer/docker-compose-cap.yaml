@@ -4,21 +4,22 @@ version: "3.9"
 # Usage
 # ---------------------------------------------------------------------------
 # AP mode (default):
-#   docker compose up --build
+#   docker compose -f docker-compose-cap.yaml up --build
 #
 # CP mode:
-#   CONFIG_MODE=cp docker compose up --build
+#   CONFIG_MODE=cp docker compose -f docker-compose-cap.yaml up --build
 #
 # Partition simulation (disconnect node3 from the internal network):
-#   docker network disconnect task2_kv_net task2-node3-1
+#   docker network disconnect crdt_layer_kv_net kv-node3
 #
 # Heal the partition:
-#   docker network connect task2_kv_net task2-node3-1
+#   docker network connect crdt_layer_kv_net kv-node3
 # ---------------------------------------------------------------------------
 
 x-replica-common: &replica-common
   build:
-    context: ./kv_store
+    context: .
+    dockerfile: Dockerfile-crdt
   networks:
     - kv_net
   environment:

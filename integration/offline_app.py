@@ -38,8 +38,8 @@ import requests
 from flask import Flask, request, jsonify, render_template_string
 
 # Local CRDT imports
-from crdt_layer.crdt_or_set import ORSet
-from crdt_layer.crdt_pn_counter import PNCounter
+from crdt_or_set import ORSet
+from crdt_pn_counter import PNCounter
 
 # ---------------------------------------------------------------------------
 # Config
