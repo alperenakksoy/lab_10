@@ -215,9 +215,10 @@ def phase4_reconnect():
     time.sleep(2.0)
 
     # Trigger a sync on all online clients too so they pull merged state
-    for idx in ONLINE_CLIENTS_IDX:
-        _post(CLIENTS[idx], "/sync")
-    time.sleep(1.0)
+    for _ in range(2):
+        for idx in range(len(CLIENTS)):
+            _post(CLIENTS[idx], "/sync")
+        time.sleep(1.0)
 
 
 def phase5_convergence_check():

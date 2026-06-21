@@ -1,4 +1,3 @@
-# Dockerfile — Raft node, offline client, and dashboard (Task 4 + 5)
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -18,5 +17,4 @@ COPY crdt_counter.py      .
 COPY crdt_pn_counter.py   .
 COPY crdt_or_set.py       .
 
-# Default: run a Raft node (override CMD in docker-compose for clients/dashboard)
 CMD ["python", "app.py"]
